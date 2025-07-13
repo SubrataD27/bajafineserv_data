@@ -139,12 +139,29 @@ class DocumentProcessor:
         return chunks
     
     def _generate_embeddings(self, chunks: List[str]) -> np.ndarray:
-        """Generate embeddings for text chunks"""
-        if not self.embedding_model or not chunks:
+        """Generate simple text-based similarity scores"""
+        if not chunks:
             return np.array([])
         
         try:
-            embeddings = self.embedding_model.encode(chunks)
+            # Simple text-based similarity using word overlap
+            # This is a fallback - in production you'd use proper embeddings
+            embeddings = []
+            for chunk in chunks:
+                # Create a simple feature vector based on common insurance terms
+                insurance_terms = ['coverage', 'premium', 'policy', 'claim', 'benefit', 'deductible', 
+                                 'surgery', 'treatment', 'medical', 'hospital', 'doctor', 'patient',
+                                 'age', 'year', 'month', 'amount', 'rupees', 'rs', 'cost', 'fee']
+                
+                # Count term frequencies
+                chunk_lower = chunk.lower()
+                term_vector = [chunk_lower.count(term) for term in insurance_terms]
+                
+                # Add text length and word count features
+                term_vector.extend([len(chunk), len(chunk.split())])
+                
+                embeddings.append(term_vector)
+            
             return np.array(embeddings)
         except Exception as e:
             print(f"Error generating embeddings: {e}")
