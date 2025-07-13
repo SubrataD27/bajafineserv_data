@@ -205,37 +205,47 @@ class DocumentProcessor:
         return policy_info
     
     async def search_similar_chunks(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search for similar chunks across all documents"""
-        if not self.embedding_model:
-            return []
-        
+        """Search for similar chunks using simple text similarity"""
         try:
-            # Generate query embedding
-            query_embedding = self.embedding_model.encode([query])[0]
+            # Simple keyword-based similarity
+            query_lower = query.lower()
+            query_words = set(query_lower.split())
             
             similar_chunks = []
             
             # Search across all cached documents
             for doc_id, doc_data in self.document_chunks.items():
-                if not doc_data.get("embeddings") or not doc_data.get("chunks"):
+                if not doc_data.get("chunks"):
                     continue
                 
-                embeddings = np.array(doc_data["embeddings"])
                 chunks = doc_data["chunks"]
                 
-                # Calculate similarity scores
-                similarities = np.dot(embeddings, query_embedding)
-                
-                # Get top chunks from this document
-                top_indices = np.argsort(similarities)[-top_k:][::-1]
-                
-                for idx in top_indices:
-                    if similarities[idx] > 0.5:  # Threshold for similarity
+                # Calculate simple similarity scores
+                for idx, chunk in enumerate(chunks):
+                    chunk_lower = chunk.lower()
+                    chunk_words = set(chunk_lower.split())
+                    
+                    # Jaccard similarity
+                    intersection = query_words.intersection(chunk_words)
+                    union = query_words.union(chunk_words)
+                    jaccard_sim = len(intersection) / len(union) if union else 0
+                    
+                    # Keyword matching bonus
+                    keyword_bonus = 0
+                    important_keywords = ['surgery', 'treatment', 'age', 'year', 'month', 'policy', 'coverage', 'amount']
+                    for keyword in important_keywords:
+                        if keyword in query_lower and keyword in chunk_lower:
+                            keyword_bonus += 0.1
+                    
+                    # Combined similarity
+                    similarity = jaccard_sim + keyword_bonus
+                    
+                    if similarity > 0.1:  # Threshold for similarity
                         similar_chunks.append({
                             "document": doc_data["filename"],
-                            "chunk": chunks[idx],
-                            "similarity": float(similarities[idx]),
-                            "chunk_index": int(idx)
+                            "chunk": chunk,
+                            "similarity": min(similarity, 1.0),  # Cap at 1.0
+                            "chunk_index": idx
                         })
             
             # Sort by similarity and return top results
