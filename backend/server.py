@@ -192,7 +192,8 @@ async def get_system_stats():
     """Get system statistics"""
     total_documents = await documents_collection.count_documents({})
     total_queries = await queries_collection.count_documents({})
-    total_sessions = await queries_collection.distinct("session_id").__len__()
+    session_ids = await queries_collection.distinct("session_id")
+    total_sessions = len(session_ids)
     
     return {
         "total_documents": total_documents,
