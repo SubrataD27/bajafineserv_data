@@ -10,7 +10,6 @@ import re
 from datetime import datetime
 import json
 import numpy as np
-from sentence_transformers import SentenceTransformer
 import pickle
 import hashlib
 
