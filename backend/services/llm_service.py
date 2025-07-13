@@ -42,12 +42,9 @@ class LLMService:
         print("✅ Intelligent rule-based system initialized")
     
     async def generate_response(self, prompt: str, context: str = "", max_tokens: int = 256) -> str:
-        """Generate response using the LLM or fallback"""
+        """Generate response using the rule-based intelligent system"""
         try:
-            if self.provider == "huggingface" and self.pipeline:
-                return await self._generate_hf_response(prompt, context, max_tokens)
-            else:
-                return await self._generate_fallback_response(prompt, context)
+            return await self._generate_fallback_response(prompt, context)
                 
         except Exception as e:
             print(f"Error in generate_response: {e}")
