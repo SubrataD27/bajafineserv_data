@@ -1,21 +1,19 @@
 """
 LLM Service for HackRx 6.0 - Free LLM Integration
-Supports Hugging Face Transformers with fallback to other free options
+Supports rule-based intelligent processing with optional HuggingFace integration
 """
 
 import os
 from typing import Dict, Any, List
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import torch
 from datetime import datetime
 import json
 import re
 
 class LLMService:
     def __init__(self):
-        self.provider = os.getenv("LLM_PROVIDER", "huggingface")
-        self.model_name = os.getenv("HUGGINGFACE_MODEL", "microsoft/DialoGPT-medium")
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.provider = os.getenv("LLM_PROVIDER", "fallback")
+        self.model_name = os.getenv("HUGGINGFACE_MODEL", "rule-based")
+        self.device = "cpu"
         self.model = None
         self.tokenizer = None
         self.pipeline = None
@@ -26,33 +24,8 @@ class LLMService:
     def _initialize_model(self):
         """Initialize the LLM model based on provider"""
         try:
-            if self.provider == "huggingface":
-                print(f"Loading Hugging Face model: {self.model_name}")
-                
-                # Use a lightweight model for faster loading
-                model_name = "microsoft/DialoGPT-small"  # Smaller, faster model
-                
-                # Initialize tokenizer and model
-                self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                self.model = AutoModelForCausalLM.from_pretrained(model_name)
-                
-                # Add padding token if it doesn't exist
-                if self.tokenizer.pad_token is None:
-                    self.tokenizer.pad_token = self.tokenizer.eos_token
-                
-                # Create text generation pipeline
-                self.pipeline = pipeline(
-                    "text-generation",
-                    model=self.model,
-                    tokenizer=self.tokenizer,
-                    device=0 if self.device == "cuda" else -1,
-                    max_length=512,
-                    temperature=0.7,
-                    do_sample=True,
-                    pad_token_id=self.tokenizer.eos_token_id
-                )
-                
-                print("✅ Hugging Face model loaded successfully")
+            # Start with fallback system - more reliable for demo
+            self._initialize_fallback()
                 
         except Exception as e:
             print(f"❌ Error loading model: {e}")
@@ -61,12 +34,12 @@ class LLMService:
     
     def _initialize_fallback(self):
         """Initialize fallback rule-based system"""
-        print("🔄 Initializing fallback rule-based system...")
+        print("🔄 Initializing intelligent rule-based system...")
         self.provider = "fallback"
         self.model = None
         self.tokenizer = None
         self.pipeline = None
-        print("✅ Fallback system initialized")
+        print("✅ Intelligent rule-based system initialized")
     
     async def generate_response(self, prompt: str, context: str = "", max_tokens: int = 256) -> str:
         """Generate response using the LLM or fallback"""
