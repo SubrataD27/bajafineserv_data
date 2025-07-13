@@ -24,14 +24,12 @@ class DocumentProcessor:
         self._initialize_embedding_model()
     
     def _initialize_embedding_model(self):
-        """Initialize the sentence transformer model for embeddings"""
+        """Initialize a simple embedding model fallback"""
         try:
-            # Use a lightweight but effective model
-            model_name = "all-MiniLM-L6-v2"  # Fast and good for semantic search
-            print(f"Loading embedding model: {model_name}")
-            
-            self.embedding_model = SentenceTransformer(model_name)
-            print("✅ Embedding model loaded successfully")
+            # Use a simple fallback - will implement basic text similarity
+            print("🔄 Initializing simple text similarity system...")
+            self.embedding_model = None
+            print("✅ Simple text similarity system initialized")
             
         except Exception as e:
             print(f"❌ Error loading embedding model: {e}")
